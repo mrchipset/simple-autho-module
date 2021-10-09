@@ -1,6 +1,6 @@
 package simple.autho.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,15 +11,24 @@ import simple.autho.service.impl.AuthenticationServiceImpl;
 public class AuthcentitionController {
     
     private AuthenticationService service = new AuthenticationServiceImpl();
-    @GetMapping("/info")
-    public String get()
+    // @CrossOrigin
+    @PostMapping("/login")
+    public String login()
     {
-        return "Hello, Get Info";
+        return "Hello, Post Login";
     }
 
-    @PostMapping("/info")
-    public String post()
+    // @CrossOrigin
+    @PostMapping("/register")
+    public String register()
     {
-        return "Hello, Post Info";
+        return "Hello, Post Register";
+    }
+
+    // @CrossOrigin
+    @PostMapping("/status")
+    public String status()
+    {
+        return "Helllo, Post Info";
     }
 }
