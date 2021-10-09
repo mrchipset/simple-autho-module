@@ -31,5 +31,8 @@ axios.interceptors.response.use(res => {
 
   return res
 })
+axios.defaults.validateStatus = function (status) {
+  return status < 500
+}
 
 export default axios

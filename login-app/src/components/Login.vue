@@ -25,6 +25,8 @@ import { reactive, ref, toRefs } from 'vue'
 import md5 from 'js-md5'
 import { localSet } from '@/utils'
 import axios from '@/utils/axios'
+import { ElMessage } from 'element-plus'
+import router from '@/router/Router.js'
 
 export default {
   name: 'Login',
@@ -58,13 +60,27 @@ export default {
         if (valid) {
           axios.post('/login', {
             userName: state.ruleForm.username || '',
-            passwordMd5: md5(state.ruleForm.password)
+            passWd: md5(state.ruleForm.password)
           }).then(res => {
-            localSet('token', res)
-            window.location.href = '/'
+            switch(res.status)
+            {
+              case 404:
+                ElMessage.error("用户名不存在，请先进行注册！")
+                break
+              case 403:
+                ElMessage.error("用户名或密码错误，请重试！")
+                break
+              case 200:
+                ElMessage.success("登录成功！")
+                localSet('session', res.data)
+                router.push('/')
+                break
+              default:
+                break
+            }
           })
         } else {
-          console.log('error submit!!')
+          ElMessage.error("请输入正确的登录信息！")
           return false;
         }
       })
