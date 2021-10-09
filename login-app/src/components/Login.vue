@@ -1,7 +1,9 @@
 <template>
-  <div class="Login">
-    <el-card>
-      <h1>登录</h1>
+  <div class="login-body">
+    <el-card class="login-form">
+      <div class="head">
+        <h1>登录</h1>
+      </div>
       <el-form :model="ruleForm" status-icon :rules="rules" ref="loginForm" label-width="100px" class="login-from">
         <el-form-item label="用户名" prop="username">
           <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
@@ -11,7 +13,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
-          <el-button @click="resetForm('ruleForm')">重置</el-button>
+          <el-button @click="goPath('/Register')">注册</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -27,6 +29,14 @@ import axios from '@/utils/axios'
 export default {
   name: 'Login',
   setup() {
+      // test purpose
+      // axios.post('/login', {
+      //   username: 'name',
+      //   passwordMd5: '123344'
+      // }).then(res => {
+      //   console.log(res)
+      //   window.location.href='/#/Register'
+      // })
       const loginForm = ref(null)
       const state = reactive({
         ruleForm: {
@@ -44,7 +54,6 @@ export default {
         }
       })
     const submitForm = async () => {
-      this.$router.push('/Register')
       loginForm.value.validate((valid) => {
         if (valid) {
           axios.post('/login', {
@@ -70,5 +79,25 @@ export default {
       resetForm
     }
   },
+
+  methods: {
+    goPath(url) {
+      this.$router.push(url)
+    }
+  }
 }
 </script>
+
+<style scoped>
+  .login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: #fff;
+  }
+
+  .head {
+    padding: 20px 0 20px 0;
+  }
+</style>

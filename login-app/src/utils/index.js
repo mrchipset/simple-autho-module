@@ -8,11 +8,11 @@ export function localGet (key) {
   }
   
 export function localSet (key, value) {
-window.localStorage.setItem(key, JSON.stringify(value))
+    window.localStorage.setItem(key, JSON.stringify(value))
 }
 
 export function localRemove (key) {
-window.localStorage.removeItem(key)
+    window.localStorage.removeItem(key)
 }
 
 // 判断内容是否含有表情字符，现有数据库不支持。
