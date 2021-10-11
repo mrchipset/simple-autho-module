@@ -4,10 +4,13 @@ import org.springframework.stereotype.Service;
 
 import simple.autho.entity.Session;
 import simple.autho.entity.SessionStatus;
+import simple.autho.entity.User;
+
 @Service
 public interface AuthenticationService {
-    public boolean CreateUser(String name, String passWd, Session session);
-    public boolean UpdateUserPasswd(String name, String oldPassWd, String newPassWd, Session session);
+    public Session CreateUser(User user);
+    public boolean UpdateUserPasswd(Session session, String oldPassWd, String newPassWd);
     public Session AuthencateUser(String name, String passWd);
+    public boolean Logout(Session session);
     public SessionStatus CheckAuthencatition(Session session);
 }

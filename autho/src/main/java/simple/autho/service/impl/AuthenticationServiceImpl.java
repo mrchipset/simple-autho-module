@@ -2,11 +2,16 @@ package simple.autho.service.impl;
 
 import java.util.Date;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import simple.autho.entity.Session;
@@ -22,15 +27,55 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     private RedisTemplate<String, Session> sessionRedisTemplate;
     private Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
-    public boolean CreateUser(String name, String passWd, Session session) {
-        return false;
+    @Transactional
+    public Session CreateUser(User user) {
+        User _user = userRepository.findUserByName(user.getUserName());
+        if (_user != null)
+        {
+            return null;
+        }
+        try {
+            Query q = entityManager.createNativeQuery("INSERT INTO public.tb_user (username, email, passwd) VALUES (?, ?, ?)");
+            q.setParameter(1, user.getUserName());
+            q.setParameter(2, user.getEmail());
+            q.setParameter(3, user.getPassWd());
+            
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return AuthencateUser(user.getUserName(), user.getPassWd());
     }
 
     @Override
-    public boolean UpdateUserPasswd(String name, String oldPassWd, String newPassWd, Session session) {
-        // TODO Auto-generated method stub
+    public boolean UpdateUserPasswd(Session session, String oldPassWd, String newPassWd) {
+        if (CheckAuthencatition(session) != SessionStatus.Valid)
+        {
+            return false;
+        }
+
+        User _user = userRepository.findUserByName(session.getUserName());
+        if (_user == null)
+        {
+            return false;
+        }
+
+        if (!_user.getPassWd().equals(oldPassWd))
+        {
+            return false;
+        }
+
+        _user.setPassWd(newPassWd);
+        try {
+            userRepository.saveAndFlush(_user);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -49,7 +94,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 Session session = GetAuthcenticationSession(_user);
                 sessionRedisTemplate.opsForValue()
                 .set(session.getAuthencation(), session);
-                // sessionRedisTemplate.expireAt(session.getAuthencation(), session.getExpiredDate());
                 return session;
             } else
             {
@@ -90,5 +134,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return sessionStatus;
     }
 
-
+    @Override
+    public boolean Logout(Session session) {
+        if (session == null)
+        {
+            return false;
+        } else
+        {
+            return sessionRedisTemplate.delete(session.getAuthencation());
+        }
+    }
 }

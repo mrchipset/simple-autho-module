@@ -3,7 +3,7 @@ package simple.autho.controller;
 import java.io.Console;
 import java.util.List;
 
-
+import javax.print.attribute.standard.Media;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +16,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.Data;
 import simple.autho.entity.Session;
 import simple.autho.entity.SessionStatus;
 import simple.autho.entity.User;
 import simple.autho.service.AuthenticationService;
+
+@Data
+class UpdatePassWd
+{
+    private String oldPassWd;
+    private String newPassWd;
+    private Session session;
+}
 
 @RestController
 public class AuthcentitionController {
@@ -28,11 +37,11 @@ public class AuthcentitionController {
     private AuthenticationService service;
     private Logger logger = LoggerFactory.getLogger(AuthcentitionController.class);
 
+
     @ResponseBody
     @PostMapping(path="/login", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Session> login(@RequestBody User user) throws Exception
     {
-        logger.debug(user.toString());
         Session session = service.AuthencateUser(user.getUserName(), user.getPassWd());
   
         if (session == null)    // no user
@@ -52,10 +61,30 @@ public class AuthcentitionController {
         }
     }
 
-    @PostMapping("/register")
-    public String register()
+    @ResponseBody
+    @PostMapping(path="logout", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> logout(@RequestBody Session session) throws Exception
     {
-        return "Hello, Post Register";
+        if (!service.Logout(session))
+        {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @ResponseBody
+    @PostMapping(path="/register", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Session> register(@RequestBody User user) throws Exception
+    {
+        Session session = service.CreateUser(user);
+        if (session == null)
+        {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } else
+        {
+            return ResponseEntity.ok(session);
+        }
+        
     }
 
     @ResponseBody
@@ -75,5 +104,18 @@ public class AuthcentitionController {
                 break;
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @ResponseBody
+    @PostMapping(path="/updatepasswd", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Session> updatePassWd(@RequestBody UpdatePassWd updatePassWd) throws Exception
+    {
+        if(!service.UpdateUserPasswd(updatePassWd.getSession(),
+                            updatePassWd.getOldPassWd(),
+                            updatePassWd.getNewPassWd()))
+        {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } 
+        return ResponseEntity.ok().build();
     }
 }
