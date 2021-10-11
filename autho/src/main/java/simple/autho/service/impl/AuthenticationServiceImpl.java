@@ -25,7 +25,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private RedisTemplate<String, Session> sessionRedisTemplate;
+    private RedisTemplate<String, Session> sRedisTemplate;
     private Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     @PersistenceContext
     private EntityManager entityManager;
@@ -92,7 +92,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 _user.setLastLoginDate(new Date());
                 userRepository.saveAndFlush(_user); // update current login time to db
                 Session session = GetAuthcenticationSession(_user);
-                sessionRedisTemplate.opsForValue()
+                sRedisTemplate.opsForValue()
                 .set(session.getAuthencation(), session);
                 return session;
             } else
@@ -116,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public SessionStatus CheckAuthencatition(Session session) {
         SessionStatus sessionStatus = SessionStatus.NotFound;
-        Session _session = sessionRedisTemplate.opsForValue().get(session.getAuthencation());
+        Session _session = sRedisTemplate.opsForValue().get(session.getAuthencation());
         if (_session == null)
         {
             sessionStatus = SessionStatus.NotFound;
@@ -127,7 +127,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 sessionStatus = SessionStatus.Valid;
             } else
             {
-                sessionRedisTemplate.delete(session.getAuthencation());
+                sRedisTemplate.delete(session.getAuthencation());
                 sessionStatus = SessionStatus.Expired;
             }
         }
@@ -141,7 +141,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return false;
         } else
         {
-            return sessionRedisTemplate.delete(session.getAuthencation());
+            return sRedisTemplate.delete(session.getAuthencation());
         }
     }
 }
