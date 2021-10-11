@@ -24,6 +24,8 @@ public class User {
     private String userName;
     @Column(length = 128, nullable = false, unique = true)
     private String email;
+    @Column(name = "mobile", length = 16, nullable = false, unique = true)
+    private String mobilePhone;
     private Date createDate;
     @Column(name="last_login")
     private Date lastLoginDate;

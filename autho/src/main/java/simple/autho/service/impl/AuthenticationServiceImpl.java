@@ -3,6 +3,7 @@ package simple.autho.service.impl;
 import java.util.Date;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -39,14 +40,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return null;
         }
         try {
-            Query q = entityManager.createNativeQuery("INSERT INTO public.tb_user (username, email, passwd) VALUES (?, ?, ?)");
+            Query q = entityManager.createNativeQuery("INSERT INTO public.tb_user (username, email, mobile, passwd) VALUES (?, ?, ?, ?)");
             q.setParameter(1, user.getUserName());
             q.setParameter(2, user.getEmail());
-            q.setParameter(3, user.getPassWd());
-            
+            q.setParameter(3, user.getMobilePhone());
+            q.setParameter(4, user.getPassWd());
+            q.executeUpdate();
         } catch (Exception e)
         {
-            e.printStackTrace();
+            return null;
         }
         return AuthencateUser(user.getUserName(), user.getPassWd());
     }

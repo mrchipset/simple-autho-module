@@ -2,7 +2,7 @@
   <div class="Login">
     <el-card>
       <h1>注册</h1>
-      <el-form :model="ruleForm" status-icon :rules="rules" ref="loginForm" label-width="100px" class="login-from">
+      <el-form :model="ruleForm" status-icon :rules="rules" ref="reigisterForm" label-width="100px" class="login-from">
         <el-form-item label="用户名" prop="username">
           <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
         </el-form-item>
@@ -29,9 +29,12 @@
 
 <script>
 import { reactive, ref, toRefs } from 'vue'
+import { ElMessage } from 'element-plus'
 import md5 from 'js-md5'
+
 import { localSet } from '@/utils'
 import axios from '@/utils/axios'
+import router from '@/router/Router.js'
 
 export default {
   name: 'Register',
@@ -56,8 +59,21 @@ export default {
       }, 100)
     }
 
+  var checkPassWord = (rule, value, callback) => {
+    if (value == '')
+    {
+      return callback(new Error('密码不能为空'))
+    }
+    if (state.ruleForm.password != value)
+    {
+      return callback(new Error('密码不匹配，请确认'))
+    } else
+    {
+      callback()
+    }
+  }
 
-      const loginForm = ref(null)
+      const reigisterForm = ref(null)
       const state = reactive({
         ruleForm: {
           username: '',
@@ -74,7 +90,7 @@ export default {
             { required: 'true', message: '密码不能为空', trigger: 'blur' }
           ],
           password2: [
-            { required: 'true', message: '确认密码不能为空', trigger: 'blur' }
+            { required: 'true', validator: checkPassWord, trigger: 'blur' }
           ],
           mobile: [
             { required: 'true', validator: checkMobile, trigger: 'blur' }
@@ -86,27 +102,52 @@ export default {
         }
       })
     const submitForm = async () => {
-      loginForm.value.validate((valid) => {
+      console.log(reigisterForm)
+      reigisterForm.value.validate((valid) => {
         if (valid) {
-          axios.post('/login', {
+          console.log('valid')
+          axios.post('/register', {
             userName: state.ruleForm.username || '',
-            passwordMd5: md5(state.ruleForm.password)
+            passWd: md5(state.ruleForm.password),
+            mobilePhone: state.ruleForm.mobile,
+            email: state.ruleForm.email
           }).then(res => {
-            localSet('token', res)
-            window.location.href = '/'
+            switch(res.status)
+            {
+              case 403:
+                ElMessage.error("用户名、邮箱、电话已存在，请重试！")
+                break
+              case 200:
+                ElMessage.success("创建用户成功！")
+                localSet('session', res.data)
+                var expireDate = new Date(res.data.expireDate)
+                var expireDateStr = expireDate.toDateString() + " " + expireDate.toTimeString();
+                router.push(
+                  {
+                    path: '/',
+                    params: {
+                      username: res.data.userName,
+                      token: res.data.authentication,
+                      expire: expireDateStr
+                      }
+                    })
+                break
+              default:
+                break
+            }
           })
         } else {
-          console.log('error submit!!')
+          ElMessage.error("请输入正确的注册信息！")
           return false;
         }
       })
     }
     const resetForm = () => {
-      loginForm.value.resetFields();
+      reigisterForm.value.resetFields();
     }
     return {
       ...toRefs(state),
-      loginForm,
+      reigisterForm,
       submitForm,
       resetForm
     }

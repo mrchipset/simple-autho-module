@@ -14,10 +14,11 @@ create table if not exists public.tb_user (
     user_id integer DEFAULT nextval('public.user_id_seq') NOT NULL,
     username character varying(128) NOT NULL,
     email character varying(128) NOT NULL,
+    mobile character varying(16) NOT NULL,
     create_date date DEFAULT ('now'::text)::date NOT NULL,
     last_login timestamp without time zone DEFAULT now(),
     passwd character(32) NOT NULL
 );
 
 create index idx_username ON public.tb_user USING btree(username);
-ALTER TABLE public.tb_user ADD CONSTRAINT constraint_unique_column UNIQUE (username, email);
+ALTER TABLE public.tb_user ADD CONSTRAINT constraint_unique_column UNIQUE (username, email, mobile);

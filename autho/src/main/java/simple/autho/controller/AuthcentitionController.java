@@ -74,16 +74,22 @@ public class AuthcentitionController {
 
     @ResponseBody
     @PostMapping(path="/register", consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Session> register(@RequestBody User user) throws Exception
+    public ResponseEntity<Session> register(@RequestBody User user)
     {
-        Session session = service.CreateUser(user);
-        if (session == null)
+        try {
+            Session session = service.CreateUser(user);
+            if (session == null)
+            {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            } else
+            {
+                return ResponseEntity.ok(session);
+            }
+        } catch (Exception e)
         {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } else
-        {
-            return ResponseEntity.ok(session);
         }
+
         
     }
 
